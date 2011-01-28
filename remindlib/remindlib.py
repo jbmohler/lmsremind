@@ -4,6 +4,7 @@
 #  Distributed under the terms of the GNU General Public License (GPLv2 or later)
 #                  http://www.gnu.org/licenses/
 ##############################################################################
+import fuzzyparsers
 import datetime
 import re
 import subprocess
@@ -56,44 +57,6 @@ def get_todays_date():
     global todays_date
     return todays_date
 
-def str_to_month(s):
-    s = s.lower()
-    months = ["january","february","march","april","may","june","july","august","september","october","november","december"]
-    for index,m in [(i,months[i]) for i in range(12)]:
-        if m.startswith(s):
-            return index + 1
-    raise ValueError
-
-def str_to_date_int(s):
-    m = re.match("([a-zA-Z]*) ([0-9]+)(,|) ([0-9]+)",s)
-    if m:
-        return int(m.group(4)),str_to_month(m.group(1)),int(m.group(2))
-    m = re.match("([a-zA-Z]*) ([0-9]+)",s)
-    if m:
-        return None,str_to_month(m.group(1)),int(m.group(2))
-    m = re.match("([0-9]{4})-([0-9]{1,2})-([0-9]{1,2})",s)
-    if m:
-        return int(m.group(1)),int(m.group(2)),int(m.group(3))
-    m = re.match("(-|\+)([0-9]+)",s)
-    if m:
-        if m.group(1)=='+':
-            d = datetime.date.today() + datetime.timedelta(int(m.group(2)))
-        elif m.group(1)=='-':
-            d = datetime.date.today() - datetime.timedelta(int(m.group(2)))
-        return d.year,d.month,d.day
-    raise NotImplementedError
-    return None,None,None
-
-def str_to_date(s):
-    year,month,day = str_to_date_int(s)
-    if year is None:
-        year = datetime.date.today().year
-    if month is None:
-        month = datetime.date.today().month
-    if day is None:
-        day = datetime.date.today().day
-    return datetime.date(year,month,day)
-
 class DateCondition:
     def __init__(self):
         raise NotImplementedError
@@ -104,7 +67,7 @@ class DateCondition:
 class SpecificDate(DateCondition):
     def __init__(self,year=None,month=None,day=None,dateStr=None):
         if dateStr is not None:
-            self.date = str_to_date(s)
+            self.date = fuzzyparsers.parse_date(dateStr)
         else:
             self.date = datetime.date(year,month,day)
 
@@ -129,7 +92,7 @@ class DayOfWeek(DateCondition):
 
 class Recurring(DateCondition):
     def __init__(self,init_date,length):
-        self.date = str_to_date(init_date)
+        self.date = fuzzyparsers.parse_date(init_date)
         self.length = length
 
     def matches(self,date):
@@ -156,7 +119,7 @@ def parse_DateCondition(dc):
     if isinstance(dc,DateCondition):
         return dc
     elif isinstance(dc,str):
-        return PartialDate(*str_to_date_int(dc))
+        return PartialDate(*fuzzyparsers.DateParser().str_to_date_int(dc))
     elif isinstance(dc,int):
         return PartialDate(None,None,dc)
     raise NotImplementedError

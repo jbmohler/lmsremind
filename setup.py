@@ -26,4 +26,5 @@ setup(name='lmsremind',
       url='https://bitbucket.org/jbmohler/lmsremind',
       scripts=['scripts/lmsremind'],
       packages=['remindlib'],
+      install_requires='fuzzyparsers'
      )
