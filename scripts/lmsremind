@@ -5,41 +5,44 @@
 #  Distributed under the terms of the GNU General Public License (GPLv2 or later)
 #                  http://www.gnu.org/licenses/
 ##############################################################################
+import os
 import datetime
 import optparse
-import os
-from remindlib import *
-#import fuzzyparsers
+import remindlib
+import fuzzyparsers
 
 parser = optparse.OptionParser()
-parser.add_option("-r", "--reminders", default=None, dest="reminders", help="File defining reminders")
-parser.add_option("-d", "--date", default=None, dest="date", help="Show reminders for this date.")
-parser.add_option("-e", "--email", default=None, dest="email", help="Send an E-mail to the given address with the reminders (need working sendmail)")
+parser.add_option("-r", "--reminders", default=None, dest="reminders",
+        help="File defining reminders")
+parser.add_option("-d", "--date", default=None, dest="date",
+        help="Show reminders for this date.")
+parser.add_option("-e", "--email", default=None, dest="email",
+        help="Send an E-mail to the given address with the reminders (need working sendmail)")
 (options, args) = parser.parse_args()
 
 if options.date is None:
-    set_todays_date(datetime.date.today())
+    remindlib.set_todays_date(datetime.date.today())
 else:
-    set_todays_date(fuzzyparsers.parse_date(options.date))
+    remindlib.set_todays_date(fuzzyparsers.parse_date(options.date))
 
 rem_globs = {}
 dows = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 for index, d in [(i, dows[i]) for i in range(7)]:
-    rem_globs[d] = DayOfWeek(index)
+    rem_globs[d] = remindlib.DayOfWeek(index)
 
-rem_globs["today"] = get_todays_date()
+rem_globs["today"] = remindlib.get_todays_date()
 
-rem_globs["Remind"] = Remind
-rem_globs["Match"] = Match
+rem_globs["Remind"] = remindlib.Remind
+rem_globs["Match"] = remindlib.Match
 
-rem_globs["Date"] = SpecificDate
-rem_globs["Recurring"] = Recurring
-rem_globs["Prior"] = Prior
-rem_globs["Post"] = Post
+rem_globs["Date"] = remindlib.SpecificDate
+rem_globs["Recurring"] = remindlib.Recurring
+rem_globs["Prior"] = remindlib.Prior
+rem_globs["Post"] = remindlib.Post
 
 if options.reminders is None:
     options.reminders = os.path.join(os.environ["HOME"], ".lmsremind")
 
 execfile(options.reminders, rem_globs)
 
-ActOnHits(options.email)
+remindlib.ActOnHits(options.email)
