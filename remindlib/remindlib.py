@@ -4,19 +4,16 @@
 #  Distributed under the terms of the GNU General Public License (GPLv2 or later)
 #                  http://www.gnu.org/licenses/
 ##############################################################################
-import fuzzyparsers
 import datetime
-import re
 import subprocess
-import string
-import sys
+import fuzzyparsers
 import email.Utils
 
 todays_date = None
 hit_list = []
 
 class Reminder:
-    def __init__(self,brief,memo):
+    def __init__(self, brief, memo):
         self.brief = brief
         if memo is not None:
             self.memo = memo.strip()
@@ -26,14 +23,14 @@ class Reminder:
     def __repr__(self):
         return "%s\n\n%s" % (self.brief, self.memo)
 
-    def email(self,address):
-        send = subprocess.Popen( ["/usr/sbin/sendmail", "-t"], stdin=subprocess.PIPE )
-        send.stdin.write( "To: %s\n" % (address,) )
-        #send.stdin.write( "From: lmsremind\n" )
-        send.stdin.write( "Date: %s\n" % (email.Utils.formatdate(localtime=True)) )
-        send.stdin.write( "X-Mailer: lmsremind\n" )
-        send.stdin.write( "Subject: %s\n" % (self.brief,) )
-        send.stdin.write( "\n%s\n" % (self.memo,) )
+    def email(self, address):
+        send = subprocess.Popen(["/usr/sbin/sendmail", "-t"], stdin=subprocess.PIPE)
+        send.stdin.write("To: %s\n" % (address,))
+        #send.stdin.write("From: lmsremind\n")
+        send.stdin.write("Date: %s\n" % (email.Utils.formatdate(localtime=True)))
+        send.stdin.write("X-Mailer: lmsremind\n")
+        send.stdin.write("Subject: %s\n" % (self.brief,))
+        send.stdin.write("\n%s\n" % (self.memo,))
         send.stdin.close()
 
 def ActOnHits(email):
@@ -44,12 +41,12 @@ def ActOnHits(email):
         else:
             print h
 
-def ReminderHit(brief,memo):
+def ReminderHit(brief, memo):
     global hit_list
-    hit_list.append(Reminder(brief,memo))
+    hit_list.append(Reminder(brief, memo))
 
 def set_todays_date(date):
-    assert(isinstance(date,datetime.date))
+    assert(isinstance(date, datetime.date))
     global todays_date
     todays_date = date
 
@@ -61,52 +58,52 @@ class DateCondition:
     def __init__(self):
         raise NotImplementedError
 
-    def matches(self,date):
+    def matches(self, date):
         raise NotImplementedError
 
 class SpecificDate(DateCondition):
-    def __init__(self,year=None,month=None,day=None,dateStr=None):
+    def __init__(self, year=None, month=None, day=None, dateStr=None):
         if dateStr is not None:
             self.date = fuzzyparsers.parse_date(dateStr)
         else:
-            self.date = datetime.date(year,month,day)
+            self.date = datetime.date(year, month, day)
 
-    def matches(self,date):
-        assert(isinstance(date,datetime.date))
+    def matches(self, date):
+        assert(isinstance(date, datetime.date))
         return self.date == date
 
 class DayOfWeek(DateCondition):
-    def __init__(self,dow):
-        if isinstance(dow,str):
+    def __init__(self, dow):
+        if isinstance(dow, str):
             dow = dow.lower()
-            dows = ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"]
-            for index,d in [(i,dows[i]) for i in range(7)]:
+            dows = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+            for index, d in [(i, dows[i]) for i in range(7)]:
                 if d.startswith(dow):
                     dow = index
-        assert(type(dow) is int and 0<=dow<=6)
+        assert(type(dow) is int and 0 <= dow <= 6)
         self.dow = dow
 
-    def matches(self,date):
-        assert(isinstance(date,datetime.date))
+    def matches(self, date):
+        assert(isinstance(date, datetime.date))
         return self.dow == date.weekday()
 
 class Recurring(DateCondition):
-    def __init__(self,init_date,length):
+    def __init__(self, init_date, length):
         self.date = fuzzyparsers.parse_date(init_date)
         self.length = length
 
-    def matches(self,date):
-        assert(isinstance(date,datetime.date))
+    def matches(self, date):
+        assert(isinstance(date, datetime.date))
         return ((date - self.date).days % self.length) == 0
 
 class PartialDate(DateCondition):
-    def __init__(self,year,month,day):
+    def __init__(self, year, month, day):
         self.year = year
         self.month = month
         self.day = day
 
-    def matches(self,date):
-        assert(isinstance(date,datetime.date))
+    def matches(self, date):
+        assert(isinstance(date, datetime.date))
         if self.year is not None and self.year != date.year:
             return False
         if self.month is not None and self.month != date.month:
@@ -116,42 +113,42 @@ class PartialDate(DateCondition):
         return True
 
 def parse_DateCondition(dc):
-    if isinstance(dc,DateCondition):
+    if isinstance(dc, DateCondition):
         return dc
-    elif isinstance(dc,str):
+    elif isinstance(dc, str):
         return PartialDate(*fuzzyparsers.DateParser().str_to_date_int(dc))
-    elif isinstance(dc,int):
-        return PartialDate(None,None,dc)
+    elif isinstance(dc, int):
+        return PartialDate(None, None, dc)
     raise NotImplementedError
 
 class Prior(DateCondition):
-    def __init__(self,dc,days_prior):
+    def __init__(self, dc, days_prior):
         self.dc = parse_DateCondition(dc)
-        assert(0<=days_prior<=366) # why more than a year?
+        assert 0 <= days_prior <= 366, 'days should never be more than a year'
         self.days_prior = days_prior
 
-    def matches(self,date):
-        assert(isinstance(date,datetime.date))
+    def matches(self, date):
+        assert(isinstance(date, datetime.date))
         for i in xrange(self.days_prior+1):
             if self.dc.matches(date + datetime.timedelta(i)):
                 return True
         return False
 
 class Post(DateCondition):
-    def __init__(self,dc,days_post):
+    def __init__(self, dc, days_post):
         self.dc = parse_DateCondition(dc)
-        assert(0<=days_post<=366) # why more than a year?
+        assert 0 <= days_prior <= 366, 'days should never be more than a year'
         self.days_post = days_post
 
-    def matches(self,date):
-        assert(isinstance(date,datetime.date))
+    def matches(self, date):
+        assert(isinstance(date, datetime.date))
         for i in xrange(self.days_post+1):
             if self.dc.matches(date - datetime.timedelta(i)):
                 return True
         return False
 
 def Match(dc):
-    if isinstance(dc,(list,tuple)):
+    if isinstance(dc, (list, tuple)):
         dc_list = dc
     else:
         dc_list = [dc]
@@ -161,6 +158,6 @@ def Match(dc):
             return dc # Once, we've been done, we quit
     return None
 
-def Remind(dc,brief=None,memo=None):
+def Remind(dc, brief=None, memo=None):
     if Match(dc):
-        ReminderHit(brief,memo)
+        ReminderHit(brief, memo)

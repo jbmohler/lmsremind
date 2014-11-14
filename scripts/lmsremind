@@ -12,19 +12,19 @@ from remindlib import *
 #import fuzzyparsers
 
 parser = optparse.OptionParser()
-parser.add_option( "-r", "--reminders", default=None, dest="reminders", help="File defining reminders" )
-parser.add_option( "-d", "--date", default=None, dest="date", help="Show reminders for this date." )
-parser.add_option( "-e", "--email", default=None, dest="email", help="Send an E-mail to the given address with the reminders (need working sendmail)" )
+parser.add_option("-r", "--reminders", default=None, dest="reminders", help="File defining reminders")
+parser.add_option("-d", "--date", default=None, dest="date", help="Show reminders for this date.")
+parser.add_option("-e", "--email", default=None, dest="email", help="Send an E-mail to the given address with the reminders (need working sendmail)")
 (options, args) = parser.parse_args()
 
 if options.date is None:
-    set_todays_date( datetime.date.today() )
+    set_todays_date(datetime.date.today())
 else:
-    set_todays_date( fuzzyparsers.parse_date(options.date) )
+    set_todays_date(fuzzyparsers.parse_date(options.date))
 
 rem_globs = {}
-dows = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]
-for index,d in [(i,dows[i]) for i in range(7)]:
+dows = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+for index, d in [(i, dows[i]) for i in range(7)]:
     rem_globs[d] = DayOfWeek(index)
 
 rem_globs["today"] = get_todays_date()
@@ -40,6 +40,6 @@ rem_globs["Post"] = Post
 if options.reminders is None:
     options.reminders = os.path.join(os.environ["HOME"], ".lmsremind")
 
-execfile(options.reminders,rem_globs)
+execfile(options.reminders, rem_globs)
 
 ActOnHits(options.email)
