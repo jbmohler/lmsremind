@@ -27,7 +27,7 @@ else:
 
 rem_globs = {}
 dows = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-for index, d in [(i, dows[i]) for i in range(7)]:
+for index, d in enumerate(dows):
     rem_globs[d] = remindlib.DayOfWeek(index)
 
 rem_globs["today"] = remindlib.get_todays_date()
