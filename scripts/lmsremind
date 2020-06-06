@@ -43,6 +43,9 @@ rem_globs["Post"] = remindlib.Post
 if options.reminders is None:
     options.reminders = os.path.join(os.environ["HOME"], ".lmsremind")
 
-execfile(options.reminders, rem_globs)
+with open(options.reminders) as f:
+    basename = os.path.basename(options.reminders)
+    code = compile(f.read(), basename, 'exec')
+    exec(code, rem_globs)
 
 remindlib.ActOnHits(options.email)

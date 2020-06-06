@@ -1,1 +1,1 @@
-from remindlib import *
+from .core import *

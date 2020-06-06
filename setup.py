@@ -7,11 +7,8 @@
 #                  http://www.gnu.org/licenses/
 ##############################################################################
 
-from ez_setup import use_setuptools
-use_setuptools()
-
-from setuptools import setup
 import os
+from setuptools import setup
 
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
@@ -22,8 +19,8 @@ setup(name='lmsremind',
       license='GPLv2 or later',
       author='Joel B. Mohler',
       author_email='joel@kiwistrawberry.us',
-      long_description=read('README.txt'),
-      url='https://bitbucket.org/jbmohler/lmsremind',
+      long_description=read('README.md'),
+      url='https://github.com/jbmohler/lmsremind',
       scripts=['scripts/lmsremind'],
       packages=['remindlib'],
       install_requires='fuzzyparsers'

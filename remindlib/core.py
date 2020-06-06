@@ -7,7 +7,7 @@
 import datetime
 import subprocess
 import fuzzyparsers
-import email.Utils
+import email.utils
 
 todays_date = None
 hit_list = []
@@ -27,7 +27,7 @@ class Reminder:
         send = subprocess.Popen(["/usr/sbin/sendmail", "-t"], stdin=subprocess.PIPE)
         send.stdin.write("To: %s\n" % (address,))
         #send.stdin.write("From: lmsremind\n")
-        send.stdin.write("Date: %s\n" % (email.Utils.formatdate(localtime=True)))
+        send.stdin.write("Date: %s\n" % (email.utils.formatdate(localtime=True)))
         send.stdin.write("X-Mailer: lmsremind\n")
         send.stdin.write("Subject: %s\n" % (self.brief,))
         send.stdin.write("\n%s\n" % (self.memo,))
@@ -39,7 +39,7 @@ def ActOnHits(email):
         if email:
             h.email(email)
         else:
-            print h
+            print(h)
 
 def ReminderHit(brief, memo):
     global hit_list
