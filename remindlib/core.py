@@ -149,7 +149,7 @@ class Prior(DateCondition):
 
     def matches(self, date):
         assert isinstance(date, datetime.date)
-        for i in xrange(self.days_prior + 1):
+        for i in range(self.days_prior + 1):
             if self.dc.matches(date + datetime.timedelta(i)):
                 return True
         return False
@@ -163,7 +163,7 @@ class Post(DateCondition):
 
     def matches(self, date):
         assert isinstance(date, datetime.date)
-        for i in xrange(self.days_post + 1):
+        for i in range(self.days_post + 1):
             if self.dc.matches(date - datetime.timedelta(i)):
                 return True
         return False
