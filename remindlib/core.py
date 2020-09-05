@@ -26,12 +26,16 @@ class Reminder:
 
     def email(self, address):
         send = subprocess.Popen(["/usr/sbin/sendmail", "-t"], stdin=subprocess.PIPE)
-        send.stdin.write("To: %s\n" % (address,))
-        # send.stdin.write("From: lmsremind\n")
-        send.stdin.write("Date: %s\n" % (email.utils.formatdate(localtime=True)))
-        send.stdin.write("X-Mailer: lmsremind\n")
-        send.stdin.write("Subject: %s\n" % (self.brief,))
-        send.stdin.write("\n%s\n" % (self.memo,))
+
+        def write_stdin(s):
+            send.stdin.write(s.encode('utf8'))
+
+        write_stdin("To: %s\n" % (address,))
+        # write_stdin("From: lmsremind\n")
+        write_stdin("Date: %s\n" % (email.utils.formatdate(localtime=True)))
+        write_stdin("X-Mailer: lmsremind\n")
+        write_stdin("Subject: %s\n" % (self.brief,))
+        write_stdin("\n%s\n" % (self.memo,))
         send.stdin.close()
 
 
